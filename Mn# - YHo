@@ -1,0 +1,117 @@
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+
+matplotlib.rcParams['font.family'] = 'sans-serif'
+matplotlib.rcParams['font.sans-serif'] = ['DejaVu Sans']
+matplotlib.rcParams['axes.unicode_minus'] = True
+
+np.random.seed(42)
+
+fig, ax = plt.subplots(figsize=(12, 9), dpi=300, frameon=False)
+
+F = np.linspace(0.98, 0.02, 300)
+Mn0 = 0.06
+Mn_max = 0.55
+Mn_num = Mn0 + (Mn_max - Mn0) * (1 - F)**0.75
+
+def model_Y(F_arr, F_crit, beta, Y0, Y_min=9.5):
+    YHo = np.full_like(F_arr, float(Y0))
+    mask = F_arr < F_crit
+    phi = (F_crit - F_arr[mask]) / F_crit
+    YHo[mask] = Y_min + (Y0 - Y_min) * np.exp(-beta * phi)
+    return YHo
+
+scenarios = {
+    'Fluid-poor(1.0 wt%$\mathrm{H_2O}$)': {'F_crit': 0.30, 'beta': 0.6, 'Y0': 34.0, 'color': 'green',   'ls': '--'},
+    'Moderate(3.5 wt%$\mathrm{H_2O}$)':   {'F_crit': 0.60, 'beta': 3.5, 'Y0': 32.0, 'color': '#ED7D31', 'ls': '--'},
+    'Fluid-rich(6.0 wt%$\mathrm{H_2O}$)': {'F_crit': 0.90, 'beta': 7.0, 'Y0': 30.0, 'color': 'red',     'ls': '--'},
+}
+
+curve_handles = []
+curve_labels = []
+for name, params in scenarios.items():
+    YHo = model_Y(F, params['F_crit'], params['beta'], params['Y0'])
+    l, = ax.plot(Mn_num, YHo, color=params['color'], linestyle=params['ls'],
+                 linewidth=2.5, label=name)
+    curve_handles.append(l)
+    curve_labels.append(name)
+
+ax.axhspan(28, 35, xmin=0.08, xmax=0.52, color='lightgray', alpha=0.25, zorder=0)
+ax.tick_params(axis='both', direction='in', top=False, right=False)
+ax.axhline(y=28, color='gray', linestyle=':', linewidth=1.5, alpha=0.7, zorder=1)
+ax.text(0.4, 28.3, 'Chondritic Y/Ho = 28', fontsize=9, color='gray', ha='right')
+
+fig.subplots_adjust(left=0.14, right=0.88, bottom=0.10, top=0.90)
+
+ax.set_xlabel('Mn#', fontsize=12, labelpad=12)
+ax.set_ylabel('Y/Ho', fontsize=12, labelpad=18)
+ax.set_xlim(0.15, 0.55)
+ax.set_ylim(10, 65)
+ax.set_xticks(np.arange(0.16, 0.56, 0.05))
+ax.set_yticks(np.arange(10, 66, 5))
+
+df = pd.read_csv('grt.csv')
+df['Mn_num'] = (df['Mn']/54.94) / (df['Fe']/55.85 + df['Mn']/54.94)
+df['Y_Ho'] = df['Y'] / df['Ho']
+
+g1 = df[df['Group'].str.strip().str.lower() == 'granite']
+g2 = df[df['Group'].str.strip().str.lower() == 'pegmatite']
+g3 = df[df['Group'].str.strip().str.lower() == 'aplite']
+g4 = df[df['Group'].str.strip().str.lower() == 'sw']
+g5 = df[df['Group'].str.strip().str.lower() == 'sh']
+g6 = df[df['Group'].str.strip().str.lower() == 'ba']
+g7 = df[df['Group'].str.strip().str.lower() == 'rm']
+g8 = df[df['Group'].str.strip().str.lower() == 'ho']
+
+sc_granite = ax.scatter(g1['Mn_num'], g1['Y_Ho'], c='#C8C8C8', s=60, edgecolors='white', linewidths=0.5, zorder=5, label='Granite')
+sc_peg     = ax.scatter(g2['Mn_num'], g2['Y_Ho'], c='#000000', s=60, edgecolors='white', linewidths=0.5, zorder=5, label='Pegmatite')
+sc_ap      = ax.scatter(g3['Mn_num'], g3['Y_Ho'], c='#030AF4', s=60, edgecolors='white', linewidths=0.5, zorder=5, label='Aplite')
+sc_sw      = ax.scatter(g4['Mn_num'], g4['Y_Ho'], c='#9333ea', edgecolors='white', s=60, linewidths=0.5, zorder=6, marker='s', label='SW')
+sc_sh      = ax.scatter(g5['Mn_num'], g5['Y_Ho'], c='#9333ea', edgecolors='white', s=60, linewidths=0.5, zorder=6, marker='o', label='SH')
+sc_ba      = ax.scatter(g6['Mn_num'], g6['Y_Ho'], c='#9333ea', edgecolors='white', s=60, linewidths=0.5, zorder=6, marker='^', label='BA')
+sc_rm      = ax.scatter(g7['Mn_num'], g7['Y_Ho'], c='#9333ea', edgecolors='white', s=60, linewidths=0.5, zorder=6, marker='v', label='RM')
+sc_ho      = ax.scatter(g8['Mn_num'], g8['Y_Ho'], c='#9333ea', edgecolors='white', s=60, linewidths=0.5, zorder=6, marker='p', label='HO')
+
+rock_handles = [sc_granite, sc_peg, sc_ap, sc_sw, sc_sh, sc_ba, sc_rm, sc_ho]
+rock_labels  = [h.get_label() for h in rock_handles]
+
+leg1 = ax.legend(curve_handles, curve_labels, loc='upper left', fontsize=9,
+                 framealpha=0.95, edgecolor='gray')
+ax.add_artist(leg1)
+leg2 = ax.legend(rock_handles, rock_labels, loc='upper right', fontsize=9,
+                 framealpha=0.95, edgecolor='gray')
+
+regions_a = [
+    (0.4195, 0.0214, 30.86, 24.81, 36.91, '#9333ea', 's'),
+    (0.5119, 0.0812, 33.09, 27.31, 38.87, '#9333ea', 's'),
+    (0.4059, 0.0037, 30.53, 25.67, 35.39, '#9333ea', 's'),
+    (0.2873, 0.0107, 36.85, 30.66, 43.05, '#9333ea', 'o'),
+    (0.2845, 0.0108, 41.59, 32.38, 50.80, '#9333ea', 'o'),
+    (0.2959, 0.0158, 31.66, 27.73, 35.59, '#9333ea', 'o'),
+    (0.5068, 0.0077, 47.14, 46.03, 48.25, '#9333ea', '^'),
+    (0.5260, 0.0076, 44.27, 42.31, 46.24, '#9333ea', '^'),
+    (0.2929, 0.0241, 51.69, 43.18, 60.21, '#9333ea', 'v'),
+    (0.3016, 0.0118, 53.12, 49.34, 56.90, '#9333ea', 'v'),
+    (0.3148, 0.0186, 53.90, 47.82, 59.98, '#9333ea', 'v'),
+    (0.4524, 0.0160, 34.01, 32.38, 35.65, '#9333ea', 'p'),
+    (0.4512, 0.0049, 33.37, 29.38, 37.36, '#9333ea', 'p'),
+    (0.4830, 0.0173, 32.93, 30.91, 34.96, '#9333ea', 'p'),
+]
+
+for mn_m, mn_s, yho_m, yho_l, yho_u, color, marker in regions_a:
+    ax.errorbar(mn_m, yho_m, xerr=mn_s,
+                yerr=[[yho_m - yho_l], [yho_u - yho_m]],
+                fmt=marker, color=color, markersize=5,
+                markeredgecolor='#9333ea', markeredgewidth=0.8,
+                ecolor=color, elinewidth=0.5, capsize=2, capthick=1, zorder=10)
+
+plt.savefig(
+    "fig.svg",
+    format="svg",
+    dpi=1200,
+    bbox_inches="tight", 
+    transparent=True
+)
+plt.show()
