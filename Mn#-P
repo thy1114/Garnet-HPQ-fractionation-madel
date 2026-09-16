@@ -1,0 +1,354 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+
+
+df = pd.read_csv('grt.csv')  
+
+df['Mn_mol'] = df['Mn'] / 54.94
+df['Fe_mol'] = df['Fe'] / 55.85
+#df['Ca_mol'] = df['Ca'] / 40.08
+#df['Mg_mol'] = df['Mg'] / 24.31
+df['Mn_number'] = df['Mn_mol'] / (
+    df['Mn_mol'] + df['Fe_mol'])
+
+df['P_ppm'] = df['P']
+
+
+granite  = df[df['Group'].str.strip().str.lower() == 'granite']
+pegmatite= df[df['Group'].str.strip().str.lower() == 'pegmatite']
+aplite   = df[df['Group'].str.strip().str.lower() == 'aplite']
+sw       = df[df['Group'].str.strip().str.lower() == 'sw']
+sh       = df[df['Group'].str.strip().str.lower() == 'sh']
+ba       = df[df['Group'].str.strip().str.lower() == 'ba']
+rm       = df[df['Group'].str.strip().str.lower() == 'rm']
+ho       = df[df['Group'].str.strip().str.lower() == 'ho']
+
+
+F = np.linspace(1.0, 0.02, 500)
+Mn_curve = 0.15 + 0.35 * (1 - F) / 0.85
+
+scenarios = {
+    'Fluid-poor':   {'P0': 1000, 'F_apa': 0.65, 'kP': 3.0,  'color': 'green',    'style': '--'},
+    'Moderate':          {'P0': 1000, 'F_apa': 0.48, 'kP': 5.0,  'color': '#ED7D31',   'style': '--'},
+    'Fluid-rich':        {'P0': 1000, 'F_apa': 0.28, 'kP': 10.0, 'color': 'red',     'style': '--'},
+}
+
+def calc_p(F, P0, F_apa, kP, p_min=10):
+    """P = max(10, P0 * exp(-kP * max(0, (F_apa-F)/F_apa)))"""
+    p = np.full_like(F, float(P0))
+    mask = F <= F_apa
+    phi = (F_apa - F[mask]) / F_apa
+    p[mask] = P0 * np.exp(-kP * phi)
+    return np.maximum(p_min, p)
+
+
+fig, ax = plt.subplots(figsize=(12, 9), dpi=300, frameon=False)
+
+
+
+for name, p in scenarios.items():
+    pvals = calc_p(F, p['P0'], p['F_apa'], p['kP'])
+    ax.plot(Mn_curve, pvals, color=p['color'], linestyle=p['style'],
+            linewidth=2.2, label=name, zorder=2)
+
+# ---------- SW2-C5 ----------
+sw2c5_color = '#9333ea'
+sw2c5_mn_mean = 0.4195
+sw2c5_mn_sd = 0.0214
+sw2c5_yho_mean = 30.86
+sw2c5_yho_lower = 24.81    
+sw2c5_yho_upper = 36.91    
+sw2c5_eueu_mean = 0.0836
+sw2c5_eueu_lower = 0.0366
+sw2c5_eueu_upper = 0.1907
+sw2c5_yree_mean = 3742.7
+sw2c5_yree_lower = 2166.0
+sw2c5_yree_upper = 6467.2
+sw2c5_p_mean = 85.1
+sw2c5_p_lower = 48.8
+sw2c5_p_upper = 148.2
+
+# ---------- SW2-C1 ----------
+sw2c1_color = '#9333ea'
+sw2c1_mn_mean = 0.5119
+sw2c1_mn_sd = 0.0812
+sw2c1_yho_mean = 33.09
+sw2c1_yho_lower = 27.31
+sw2c1_yho_upper = 38.87
+sw2c1_eueu_mean = 0.0758
+sw2c1_eueu_lower = 0.0325
+sw2c1_eueu_upper = 0.1764
+sw2c1_yree_mean = 4248.2
+sw2c1_yree_lower = 2148.3
+sw2c1_yree_upper = 8400.7
+sw2c1_p_mean = 100.2
+sw2c1_p_lower = 51.0
+sw2c1_p_upper = 197.0
+
+# ---------- SW2-C2 ----------
+sw2c2_color = '#9333ea'
+sw2c2_mn_mean = 0.4059
+sw2c2_mn_sd = 0.0037
+sw2c2_yho_mean = 30.53
+sw2c2_yho_lower = 25.67
+sw2c2_yho_upper = 35.39
+sw2c2_eueu_mean = 0.1197
+sw2c2_eueu_lower = 0.0633
+sw2c2_eueu_upper = 0.2265
+sw2c2_yree_mean = 4365.8
+sw2c2_yree_lower = 2668.3
+sw2c2_yree_upper = 7143.4
+sw2c2_p_mean = 108.7
+sw2c2_p_lower = 47.6
+sw2c2_p_upper = 248.2
+
+# ---------- S1-C4 ----------
+s1c4_color = '#9333ea'
+s1c4_mn_mean = 0.2873
+s1c4_mn_sd = 0.0107
+s1c4_yho_mean = 36.85
+s1c4_yho_lower = 30.66
+s1c4_yho_upper = 43.05
+s1c4_eueu_mean = 0.0255
+s1c4_eueu_lower = 0.0137
+s1c4_eueu_upper = 0.0475
+s1c4_yree_mean = 2237.0
+s1c4_yree_lower = 1548.8
+s1c4_yree_upper = 3230.9
+s1c4_p_mean = 119.1
+s1c4_p_lower = 98.8
+s1c4_p_upper = 143.4
+
+# ---------- S1-C5 ----------
+s1c5_color = '#9333ea'
+s1c5_mn_mean = 0.2845
+s1c5_mn_sd = 0.0108
+s1c5_yho_mean = 41.59
+s1c5_yho_lower = 32.38
+s1c5_yho_upper = 50.80
+s1c5_eueu_mean = 0.0213
+s1c5_eueu_lower = 0.0141
+s1c5_eueu_upper = 0.0321
+s1c5_yree_mean = 1994.6
+s1c5_yree_lower = 1062.3
+s1c5_yree_upper = 3745.4
+s1c5_p_mean = 104.5
+s1c5_p_lower = 73.1
+s1c5_p_upper = 149.4
+
+# ---------- S1-C2 ----------
+s1c2_color = '#9333ea'
+s1c2_mn_mean = 0.2959
+s1c2_mn_sd = 0.0158
+s1c2_yho_mean = 31.66
+s1c2_yho_lower = 27.73
+s1c2_yho_upper = 35.59
+s1c2_eueu_mean = 0.0148
+s1c2_eueu_lower = 0.0113
+s1c2_eueu_upper = 0.0194
+s1c2_yree_mean = 2866.9
+s1c2_yree_lower = 2007.2
+s1c2_yree_upper = 4094.8
+s1c2_p_mean = 111.6
+s1c2_p_lower = 62.9
+s1c2_p_upper = 198.0
+
+# ---------- BA13-C2 ----------
+ba13c2_color = '#9333ea'
+ba13c2_mn_mean = 0.5068
+ba13c2_mn_sd = 0.0077
+ba13c2_yho_mean = 47.14
+ba13c2_yho_lower = 46.03
+ba13c2_yho_upper = 48.25
+ba13c2_eueu_mean = 0.0220
+ba13c2_eueu_lower = 0.0181
+ba13c2_eueu_upper = 0.0267
+ba13c2_yree_mean = 3405.3
+ba13c2_yree_lower = 3237.3
+ba13c2_yree_upper = 3582.1
+ba13c2_p_mean = 90.1
+ba13c2_p_lower = 70.0
+ba13c2_p_upper = 116.1
+
+# ---------- BA13-C4 ----------
+ba13c4_color = '#9333ea'
+ba13c4_mn_mean = 0.5260
+ba13c4_mn_sd = 0.0076
+ba13c4_yho_mean = 44.27
+ba13c4_yho_lower = 42.31
+ba13c4_yho_upper = 46.24
+ba13c4_eueu_mean = 0.0220
+ba13c4_eueu_lower = 0.0200
+ba13c4_eueu_upper = 0.0241
+ba13c4_yree_mean = 4334.9
+ba13c4_yree_lower = 3932.7
+ba13c4_yree_upper = 4778.2
+ba13c4_p_mean = 76.8
+ba13c4_p_lower = 40.0
+ba13c4_p_upper = 147.8
+
+# ---------- RM3-C1 ----------
+rm3c1_color = '#9333ea'
+rm3c1_mn_mean = 0.2929
+rm3c1_mn_sd = 0.0241
+rm3c1_yho_mean = 51.69
+rm3c1_yho_lower = 43.18
+rm3c1_yho_upper = 60.21
+rm3c1_eueu_mean = 0.0178
+rm3c1_eueu_lower = 0.0059
+rm3c1_eueu_upper = 0.0541
+rm3c1_yree_mean = 2287.1
+rm3c1_yree_lower = 1454.5
+rm3c1_yree_upper = 3596.3
+rm3c1_p_mean = 140.2
+rm3c1_p_lower = 104.7
+rm3c1_p_upper = 187.8
+
+# ---------- RM3-C4 ----------
+rm3c4_color = '#9333ea'
+rm3c4_mn_mean = 0.3016
+rm3c4_mn_sd = 0.0118
+rm3c4_yho_mean = 53.12
+rm3c4_yho_lower = 49.34
+rm3c4_yho_upper = 56.90
+rm3c4_eueu_mean = 0.0199
+rm3c4_eueu_lower = 0.0123
+rm3c4_eueu_upper = 0.0321
+rm3c4_yree_mean = 1874.1
+rm3c4_yree_lower = 1653.7
+rm3c4_yree_upper = 2123.9
+rm3c4_p_mean = 95.0
+rm3c4_p_lower = 72.0
+rm3c4_p_upper = 125.2
+
+# ---------- RM3-C5 ----------
+rm3c5_color = '#9333ea'
+rm3c5_mn_mean = 0.3148
+rm3c5_mn_sd = 0.0186
+rm3c5_yho_mean = 53.90
+rm3c5_yho_lower = 47.82
+rm3c5_yho_upper = 59.98
+rm3c5_eueu_mean = 0.0198
+rm3c5_eueu_lower = 0.0156
+rm3c5_eueu_upper = 0.0251
+rm3c5_yree_mean = 1655.4
+rm3c5_yree_lower = 1244.8
+rm3c5_yree_upper = 2201.3
+rm3c5_p_mean = 75.5
+rm3c5_p_lower = 58.4
+rm3c5_p_upper = 97.6
+
+# ---------- HO4-C4 ----------
+ho4c4_color = '#9333ea'
+ho4c4_mn_mean = 0.4524
+ho4c4_mn_sd = 0.0160
+ho4c4_yho_mean = 34.01
+ho4c4_yho_lower = 32.38
+ho4c4_yho_upper = 35.65
+ho4c4_eueu_mean = 0.0214
+ho4c4_eueu_lower = 0.0166
+ho4c4_eueu_upper = 0.0275
+ho4c4_yree_mean = 6770.4
+ho4c4_yree_lower = 4309.9
+ho4c4_yree_upper = 10635.7
+ho4c4_p_mean = 109.2
+ho4c4_p_lower = 68.0
+ho4c4_p_upper = 175.3
+
+# ---------- HO4-C5 ----------
+ho4c5_color = '#9333ea'
+ho4c5_mn_mean = 0.4512
+ho4c5_mn_sd = 0.0049
+ho4c5_yho_mean = 33.37
+ho4c5_yho_lower = 29.38
+ho4c5_yho_upper = 37.36
+ho4c5_eueu_mean = 0.0214
+ho4c5_eueu_lower = 0.0109
+ho4c5_eueu_upper = 0.0417
+ho4c5_yree_mean = 5192.3
+ho4c5_yree_lower = 2537.7
+ho4c5_yree_upper = 10623.7
+ho4c5_p_mean = 90.8
+ho4c5_p_lower = 71.6
+ho4c5_p_upper = 115.2
+
+# ---------- HO4-C1 ----------
+ho4c1_color = '#9333ea'
+ho4c1_mn_mean = 0.4830
+ho4c1_mn_sd = 0.0173
+ho4c1_yho_mean = 32.93
+ho4c1_yho_lower = 30.91
+ho4c1_yho_upper = 34.96
+ho4c1_eueu_mean = 0.0206
+ho4c1_eueu_lower = 0.0140
+ho4c1_eueu_upper = 0.0305
+ho4c1_yree_mean = 9072.9
+ho4c1_yree_lower = 6545.5
+ho4c1_yree_upper = 12576.1
+ho4c1_p_mean = 104.9
+ho4c1_p_lower = 73.9
+ho4c1_p_upper = 148.8
+
+
+
+ax.scatter(granite['Mn_number'],   granite['P_ppm'],
+           marker='o', s=60, c='#C8C8C8', edgecolors='white', linewidth=0.5,
+           label='Granite', zorder=5)
+
+ax.scatter(pegmatite['Mn_number'], pegmatite['P_ppm'],
+           marker='o', s=60, c='#000000', edgecolors='white', linewidth=0.5,
+           label='Pegmatite', zorder=5)
+
+ax.scatter(aplite['Mn_number'],    aplite['P_ppm'],
+           marker='o', s=60, c='#030AF4', edgecolors='white', linewidth=0.5,
+           label='Aplite', zorder=5)
+ax.scatter(sw['Mn_number'], sw['P_ppm'], c='#9333ea', s=60, edgecolors='white', linewidths=0.5, zorder=6, marker='s', label='SW')
+ax.scatter(sh['Mn_number'], sh['P_ppm'], c='#9333ea', s=60, edgecolors='white', linewidths=0.5, zorder=6, marker='o', label='SH')
+ax.scatter(ba['Mn_number'], ba['P_ppm'], c='#9333ea', s=60, edgecolors='white', linewidths=0.5, zorder=6, marker='^', label='BA')
+ax.scatter(rm['Mn_number'], rm['P_ppm'], c='#9333ea', s=60, edgecolors='white', linewidths=0.5, zorder=6, marker='v', label='RM')
+ax.scatter(ho['Mn_number'], ho['P_ppm'], c='#9333ea', s=60, edgecolors='white', linewidths=0.5, zorder=6, marker='p', label='HO')
+regions_d = [
+    (sw2c5_mn_mean, sw2c5_mn_sd, sw2c5_p_mean, sw2c5_p_lower, sw2c5_p_upper, sw2c5_color, 's'),
+    (sw2c1_mn_mean, sw2c1_mn_sd, sw2c1_p_mean, sw2c1_p_lower, sw2c1_p_upper, sw2c1_color, 's'),
+    (sw2c2_mn_mean, sw2c2_mn_sd, sw2c2_p_mean, sw2c2_p_lower, sw2c2_p_upper, sw2c2_color, 's'),
+    (s1c4_mn_mean, s1c4_mn_sd, s1c4_p_mean, s1c4_p_lower, s1c4_p_upper, s1c4_color, 'o'),
+    (s1c5_mn_mean, s1c5_mn_sd, s1c5_p_mean, s1c5_p_lower, s1c5_p_upper, s1c5_color, 'o'),
+    (s1c2_mn_mean, s1c2_mn_sd, s1c2_p_mean, s1c2_p_lower, s1c2_p_upper, s1c2_color, 'o'),
+    (ba13c2_mn_mean, ba13c2_mn_sd, ba13c2_p_mean, ba13c2_p_lower, ba13c2_p_upper, ba13c2_color, '^'),
+    (ba13c4_mn_mean, ba13c4_mn_sd, ba13c4_p_mean, ba13c4_p_lower, ba13c4_p_upper, ba13c4_color, '^'),
+    (rm3c1_mn_mean, rm3c1_mn_sd, rm3c1_p_mean, rm3c1_p_lower, rm3c1_p_upper, rm3c1_color, 'v'),
+    (rm3c4_mn_mean, rm3c4_mn_sd, rm3c4_p_mean, rm3c4_p_lower, rm3c4_p_upper, rm3c4_color, 'v'),
+    (rm3c5_mn_mean, rm3c5_mn_sd, rm3c5_p_mean, rm3c5_p_lower, rm3c5_p_upper, rm3c5_color, 'v'),
+    (ho4c4_mn_mean, ho4c4_mn_sd, ho4c4_p_mean, ho4c4_p_lower, ho4c4_p_upper, ho4c4_color, 'p'),
+    (ho4c5_mn_mean, ho4c5_mn_sd, ho4c5_p_mean, ho4c5_p_lower, ho4c5_p_upper, ho4c5_color, 'p'),
+    (ho4c1_mn_mean, ho4c1_mn_sd, ho4c1_p_mean, ho4c1_p_lower, ho4c1_p_upper, ho4c1_color, 'p'),
+]
+
+for mn_m, mn_s, p_m, p_l, p_u, color, marker in regions_d:
+    ax.errorbar(mn_m, p_m, xerr=mn_s,
+                yerr=[[p_m - p_l], [p_u - p_m]],
+                fmt=marker, color=color, markersize=8,
+                markeredgecolor='#9333ea', markeredgewidth=0.8,
+                ecolor=color, elinewidth=0.5, capsize=2, capthick=1, zorder=10)
+
+ax.set_xlabel('Mn#', fontsize=12)
+ax.set_ylabel('P (ppm)', fontsize=12)
+ax.set_xlim(0.15, 0.55)
+ax.set_ylim(30, 2000)
+ax.set_yscale('log')
+ax.tick_params(labelsize=10)
+ax.set_axisbelow(True)
+ax.yaxis.set_minor_locator(plt.NullLocator())
+#ax.legend(loc='upper right', fontsize=9, framealpha=0.95,
+#          edgecolor='k', fancybox=True)
+ax.tick_params(axis='both', direction='in', top=False, right=False)
+plt.savefig(
+    "fig4.svg",
+    format="svg",
+    dpi=1200,
+    bbox_inches="tight", 
+    transparent=True
+)
+plt.show()
