@@ -38,10 +38,8 @@ for name, params in scenarios.items():
     curve_handles.append(l)
     curve_labels.append(name)
 
-ax.axhspan(28, 35, xmin=0.08, xmax=0.52, color='lightgray', alpha=0.25, zorder=0)
 ax.tick_params(axis='both', direction='in', top=False, right=False)
 ax.axhline(y=28, color='gray', linestyle=':', linewidth=1.5, alpha=0.7, zorder=1)
-ax.text(0.4, 28.3, 'Chondritic Y/Ho = 28', fontsize=9, color='gray', ha='right')
 
 fig.subplots_adjust(left=0.14, right=0.88, bottom=0.10, top=0.90)
 
@@ -49,7 +47,7 @@ ax.set_xlabel('Mn#', fontsize=12, labelpad=12)
 ax.set_ylabel('Y/Ho', fontsize=12, labelpad=18)
 ax.set_xlim(0.15, 0.55)
 ax.set_ylim(10, 65)
-ax.set_xticks(np.arange(0.16, 0.56, 0.05))
+ax.set_xticks(np.arange(0.15, 0.55, 0.05))
 ax.set_yticks(np.arange(10, 66, 5))
 
 df = pd.read_csv('grt.csv')
