@@ -17,7 +17,7 @@ def calc_eu(F, H2O, k_plag, eu_min=0.01):
     return np.maximum(eu_min, eu)
 
 df = pd.read_csv('grt.csv')
-chondrite = {'Eu':0.056, 'Sm':0.148, 'Gd':0.199, 'Y':1.57, 'Ho':0.40}
+chondrite = {'Eu':0.056, 'Sm':0.148, 'Gd':0.199}
 
 df['Mn_mol'] = df['Mn'] / 54.94
 df['Fe_mol'] = df['Fe'] / 55.85
@@ -338,7 +338,7 @@ ax.yaxis.set_minor_locator(plt.NullLocator())
 
 
 plt.savefig(
-    "fig2.svg",
+    "fig8a.svg",
     format="svg",
     dpi=1200,
     bbox_inches="tight", 
