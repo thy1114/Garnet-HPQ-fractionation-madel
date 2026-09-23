@@ -30,7 +30,7 @@ F = np.linspace(1.0, 0.02, 500)
 Mn_curve = 0.15 + 0.35 * (1 - F) / 0.85
 
 scenarios = {
-    'Fluid-poor':   {'P0': 1000, 'F_apa': 0.65, 'kP': 3.0,  'color': 'green',    'style': '--'},
+    'Fluid-poor':   {'P0': 1000, 'F_apa': 0.60, 'kP': 3.0,  'color': 'green',    'style': '--'},
     'Moderate':          {'P0': 1000, 'F_apa': 0.48, 'kP': 5.0,  'color': '#ED7D31',   'style': '--'},
     'Fluid-rich':        {'P0': 1000, 'F_apa': 0.28, 'kP': 10.0, 'color': 'red',     'style': '--'},
 }
@@ -345,7 +345,7 @@ ax.yaxis.set_minor_locator(plt.NullLocator())
 #          edgecolor='k', fancybox=True)
 ax.tick_params(axis='both', direction='in', top=False, right=False)
 plt.savefig(
-    "fig4.svg",
+    "fig8d.svg",
     format="svg",
     dpi=1200,
     bbox_inches="tight", 
