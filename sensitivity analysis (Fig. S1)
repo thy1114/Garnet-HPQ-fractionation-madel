@@ -89,5 +89,12 @@ ax.set_ylabel('Y/Ho')
 ax.set_title('(c) Combined uncertainty envelopes')
 ax.legend(fontsize=7.5, loc='upper right')
 
+plt.savefig(
+    "figs1.svg",
+    format="svg",
+    dpi=1200,
+    bbox_inches="tight", 
+    transparent=True
+)
 plt.tight_layout()
 plt.show()
